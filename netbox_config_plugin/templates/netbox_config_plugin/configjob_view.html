@@ -1,0 +1,200 @@
+{% extends "base/layout.html" %}
+{% load helpers %}
+{% load django_tables2 %}
+
+{% block breadcrumbs %}
+  {% with object|viewname:'list' as plugin_url %}
+  <li class="breadcrumb-item"><a href="{% url 'plugins:'|add:plugin_url %}">{{ object|meta:'verbose_name_plural'|bettertitle }}</a></li>
+	{% endwith %}
+	{% endblock %}
+
+
+{% block content %}
+<div class="row">
+	<div class="col">
+		<div class="card">
+			<div class="card-header">
+				<strong>Device Information</strong>
+			</div>
+			<div class="card-body">
+				<table class="table">
+					<tr>
+						<th>Device</th>
+						<td><a href="{{ object.device.get_absolute_url }}">{{ object.device }}</a></td>
+					</tr>
+					<tr>
+						<th>Model</th>
+						<td><a href="{{ object.device.device_type.get_absolute_url }}">{{ object.device.device_type }}</a></td>
+					</tr>
+					<tr>
+						<th>Platform</th>
+						<td>{% if object.device.platform %}<a href="{{ object.device.platform.get_absolute_url }}">{{ object.device.platform }}</a>{% else %}<span class="text-muted">None</span>{% endif %}</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<div class="card">
+			<div class="card-header">
+				<strong>Config Generation</strong>
+			</div>
+			<div class="card-body">
+				<div class="row">
+					<div class="col-4">
+						<h3>Status</h3>
+					</div>
+					<div class="col-4">
+						{% if object.config_status == object.JobStatus.NOT_STARTED %}
+						<button class="btn btn-secondary"><i class="mdi mdi-close-thick"></i></button>
+						{% elif object.config_status == object.JobStatus.RUNNING %}
+						<button class="btn btn-primary"><i class="mdi mdi-progress-clock"></i></button>
+						{% elif object.config_status == object.JobStatus.COMPLETED %}
+						<button class="btn btn-success"><i class="mdi mdi-check-bold"></i></button>
+						{% else %}
+						<button class="btn btn-danger"><i class="mdi mdi-alert-circle-outline"></i></button>
+						{% endif %}
+					</div>
+					<div class="col-4">
+						{% if object.config_status == object.JobStatus.COMPLETED or object.config_status == object.JobStatus.FAILED %}
+						<form action="{% url 'plugins:netbox_config_plugin:configjob_generate_config' pk=object.pk %}" method="POST">
+							{% csrf_token %}
+							<button class="btn btn-warning">Rebuild</button>
+						</form>
+						{% endif %}
+						{% if object.config_status == object.JobStatus.COMPLETED %}
+							<button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#configbox" aria-expanded="false" aria-controls="collapseExample">
+								Show Config
+							</button>
+						{% endif %}
+						{% if object.config_status != object.JobStatus.NOT_STARTED %}
+						<button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#configlogbox" aria-expanded="false" aria-controls="collapseExample">
+							Show Config Log ({{ object.config_log | length }})
+						</button>
+						{% endif %}
+						{% if object.config_status == object.JobStatus.NOT_STARTED %}
+						<form action="{% url 'plugins:netbox_config_plugin:configjob_generate_config' pk=object.pk %}" method="POST">
+							{% csrf_token %}
+							<button class="btn btn-primary">Generate Config </button>
+						</form>
+						{% endif %}
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-12">
+						<div class="collapse" id="configbox">
+							<h4>Generated Config File</h4>
+							<pre><code>{{ object.config }}</code></pre>
+						</div>
+						<div class="collapse{% if object.config_status == object.JobStatus.RUNNING %}.show{% endif %}" id="configlogbox">
+							<h4>Config Generation Log</h4>
+							{% render_table config_log_table %}
+						</div>
+					</div>
+				</div>
+			</div>
+        </div>
+		<div class="card ">
+			<div class="card-header">
+				<strong>Config Comparison</strong>
+			</div>
+			<div class="card-body">
+				<div class="row">
+					<div class="col-4">
+						<h3>Status</h3>
+					</div>
+					<div class="col-4">
+						{% if object.compare_status == object.JobStatus.NOT_STARTED %}
+						<button class="btn btn-secondary"><i class="mdi mdi-close-thick"></i></button>
+						{% elif object.compare_status == object.JobStatus.RUNNING %}
+						<button class="btn btn-primary"><i class="mdi mdi-progress-clock"></i></button>
+						{% elif object.compare_status == object.JobStatus.COMPLETED %}
+						<button class="btn btn-success"><i class="mdi mdi-check-bold"></i></button>
+						{% else %}
+						<button class="btn btn-danger"><i class="mdi mdi-alert-circle-outline"></i></button>
+						{% endif %}
+					</div>
+					<div class="col-4">
+						{% if object.compare_status == object.JobStatus.COMPLETED or object.compare_status == object.JobStatus.FAILED %}
+						<form action="{% url 'plugins:netbox_config_plugin:configjob_compare_config' pk=object.pk %}" method="POST">
+							{% csrf_token %}
+							<button class="btn btn-warning">Compare Again</button>
+						</form>
+						{% endif %}
+						{% if object.compare_status == object.JobStatus.COMPLETED %}
+							<button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#diffbox" aria-expanded="false" aria-controls="collapseExample">
+								Show Diff
+							</button>
+						{% endif %}
+						{% if object.compare_status != object.JobStatus.NOT_STARTED %}
+						<button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#difflogbox" aria-expanded="false" aria-controls="collapseExample">
+							Show Diff Log ({{ object.compare_log| length }})
+						</button>
+						{% endif %}
+						{% if object.compare_status == object.JobStatus.NOT_STARTED %}
+						<form action="{% url 'plugins:netbox_config_plugin:configjob_compare_config' pk=object.pk %}" method="POST">
+							{% csrf_token %}
+							<button class="btn btn-primary">Compare Config</button>
+						</form>
+						{% endif %}
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-12">
+						<div class="collapse{% if object.compare_status == object.JobStatus.COMPLETED %}.show{% endif %}" id="diffbox">
+							<h4>Config Diff</h4>
+							<pre><code>{{ object.diff }}</code></pre>
+						</div>
+						<div class="collapse{% if object.compare_status == object.JobStatus.RUNNING %}.show{% endif %}" id="difflogbox">
+							<h4>Config Diff Log</h4>
+							{% render_table compare_log_table %}
+						</div>
+					</div>
+				</div>
+			</div>
+        </div>
+		<div class="card">
+			<div class="card-header">
+				<strong>Config Deployment</strong>
+			</div>
+			<div class="card-body">
+				<div class="row">
+					<div class="col-4">
+						<h3>Status</h3>
+					</div>
+					<div class="col-4">
+						{% if object.deployment_status == object.JobStatus.NOT_STARTED %}
+						<button class="btn btn-secondary"><i class="mdi mdi-close-thick"></i></button>
+						{% elif object.deployment_status == object.JobStatus.RUNNING %}
+						<button class="btn btn-primary"><i class="mdi mdi-progress-clock"></i></button>
+						{% elif object.deployment_status == object.JobStatus.COMPLETED %}
+						<button class="btn btn-success"><i class="mdi mdi-check-bold"></i></button>
+						{% else %}
+						<button class="btn btn-danger"><i class="mdi mdi-alert-circle-outline"></i></button>
+						{% endif %}
+					</div>
+					<div class="col-4">
+						{% if object.compare_status == object.JobStatus.COMPLETED and object.deployment_status == object.JobStatus.NOT_STARTED %}
+						<form action="{% url 'plugins:netbox_config_plugin:configjob_deploy_config' pk=object.pk %}" method="POST">
+							{% csrf_token %}
+							<button class="btn btn-success">Deploy</button>
+						</form>
+						{% endif %}
+						{% if object.deployment_status != object.JobStatus.NOT_STARTED %}
+						<button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#deploylogbox" aria-expanded="false" aria-controls="collapseExample">
+							Show Deployment Log ({{ object.deployment_log | length }})
+						</button>
+						{% endif %}
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-12">
+						<div class="collapse{% if object.deployment_status == object.JobStatus.RUNNING %}.show{% endif %}" id="deploylogbox">
+							<h4>Config Deployment Log</h4>
+							{% render_table deployment_log_table %}
+						</div>
+					</div>
+				</div>
+			</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

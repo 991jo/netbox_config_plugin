@@ -1,0 +1,10 @@
+{% load django_tables2 %}
+<div class="card">
+	<h5 class="card-header">Config Jobs</h5>
+	<div class="card-body">
+		{% render_table previous_jobs %}
+	</div>
+	<div class="card-footer text-end noprint">
+		<a class="btn btn-primary btn-sm" href="{% url 'plugins:netbox_config_plugin:configjob_create' %}?pk={{ object.pk }}"><span class="mdi mdi-plus-thick" aria-hidden="true"></span>Deploy Config</a>
+	</div>
+</div>
