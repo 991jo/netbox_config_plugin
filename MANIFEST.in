@@ -1,0 +1,2 @@
+recursive-include netbox_config_plugin/templates *
+
