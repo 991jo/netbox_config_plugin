@@ -10,9 +10,10 @@ setup(
     url="https://github.com/991jo/netbox_config_plugin",
     author='Johannes Erwerle',
     author_email='erwerle@belwue.de',
-    description='A netbox plugin to generate, compare and deploy configs to devices',
+    description='A netbox plugin to generate, '
+                'compare and deploy configs to devices',
     include_package_data=True,
     zip_safe=False,
     long_description=readme,
-    install_requires=["napalm", "netbox-plugin-extensions"]
+    install_requires=["napalm", "netbox-plugin-extensions<1.1.0"]
 )
