@@ -5,7 +5,7 @@ with open('README.md') as f:
 
 setup(
     name='netbox_config_plugin',
-    version="0.0.1",
+    version="0.0.2",
     packages=find_packages(),
     url="https://github.com/991jo/netbox_config_plugin",
     author='Johannes Erwerle',
@@ -15,5 +15,5 @@ setup(
     include_package_data=True,
     zip_safe=False,
     long_description=readme,
-    install_requires=["napalm", "netbox-plugin-extensions<1.1.0"]
+    install_requires=["napalm", "netbox-plugin-extensions>=1.1.0"]
 )

@@ -7,8 +7,6 @@ the generated config.
 
 # Status of this Plugin
 
-This plugin is compatible with NetBox 3.0.0 to v3.0.7.
-It is not compatible with versions older than 3.0.0
 
 A basic understanding of python, objects, python modules and the NetBox Django
 models is required to install this plugin as you have to provide some code
@@ -23,6 +21,13 @@ All interactions with the device are done with [NAPALM](https://github.com/napal
 so this should work with any device supported by NAPALM.
 Although currently only IOS-XE is tested.
 The general caveats for NAPALM still apply.
+
+# Version compatibility
+
+^ version ^ Netbox < 3.0 ^ Netbox 3.0 ^ NetBox 3.1 ^
+| ------- | ------------ | ---------- | ---------- |
+| 0.0.1   |              | x          |            |
+| 0.0.2   |              |            | x          |
 
 # Things not included in this plugin
 
