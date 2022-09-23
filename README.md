@@ -1,5 +1,8 @@
 # netbox_config_plugin - A plugin to generate, compare and deploy configurations
 
+
+**This project is no longer maintained and not compatible with current NetBox releases**
+
 This plugin allows you to execute your code to generate a config for a device,
 compare it to the current config of that device and replace configuration with
 the generated config.
